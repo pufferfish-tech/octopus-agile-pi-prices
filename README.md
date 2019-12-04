@@ -52,8 +52,11 @@ In an SSH terminal (putty etc):
 
 First line says run the script if you reboot, second line says run every half hour (but delay by 20s to avoid time based issues!), third line is quite important, runs every day at 4:05pm to get the next set of prices. Nothing unusual here. 
 
-- Find the bugs. :) 
+- Done! Fix it to the wall! 
 
+NOTE: If you are using the DOThat, you need to edit the above to use octoprice_main_dot.py instead of octoprice_main_inky.py. 
+
+Another NOTE: Don't be afraid to read my code. I made it as simple as possible, I subscribe to the theory that code doesn't have to be elegant or smart or even fast (in this application anyway!), it has to be maintainable above all else. If you can't understand it, what good is it? Read my code. If you don't understand it, ask me to explain it. We might find some bugs! 
 
 # Considerations
 - I wrote this myself. Because I was bored, and also because I needed to know when to plug the EV in, or start the laundry. It works but it may not be bug free. 
