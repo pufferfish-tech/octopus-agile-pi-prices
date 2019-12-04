@@ -62,7 +62,7 @@ In an SSH terminal (putty etc):
 
 NOTE: If you are using the DOThat, you need to edit the above to use octoprice_main_dot.py instead of octoprice_main_inky.py. You will also need to run pimoroni's one line curl install script for the DOThat instead of inkyphat. You can go find that yourself, it exists :) 
 
-Another NOTE: Don't be afraid to read my code. I made it as simple as possible, I subscribe to the theory that code doesn't have to be elegant or smart or even fast (in this application anyway!), it has to be maintainable above all else. If you can't understand it, what good is it? Read my code. If you don't understand it, ask me to explain it. We might find some bugs! 
+Another NOTE: I tried to make this code **simple** and readable. If you see any issues let me know. 
 
 # Considerations
 - I wrote this myself. Because I was bored, and also because I needed to know when to plug the EV in, or start the laundry. It works but it may not be bug free. 
