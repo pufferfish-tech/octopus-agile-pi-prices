@@ -229,7 +229,7 @@ else:
 
 pixels_per_h = 2  # how many pixels 1p is worth
 pixels_per_w = 2  # how many pixels 1/2 hour is worth
-chart_height = 104  # total height of the chart in pixels
+chart_base_loc = 104  # location of the bottom of the chart on screen in pixels
 number_of_vals_to_display = 36 # 36 half hours = 18 hours
 
 # plot the graph
@@ -241,7 +241,7 @@ print("low Value:", lowest_price_next_24h)
 # go through each hour and get the value
 
 for i in range(0,number_of_vals_to_display):
-	scaled_price = prices[i] * pixels_per_h # we're scaling it by the value above innit
+	scaled_price = prices[i] * pixels_per_h # we're scaling it by the value above
 
 	if prices[i] <= (lowest_price_next_24h + 1):   # if within 1p of the lowest price, display in black
 		ink_color = inky_display.BLACK
@@ -250,7 +250,7 @@ for i in range(0,number_of_vals_to_display):
 
 	# takes a bit of thought this next bit, draw a rectangle from say x =  2i to 2(i-1) for each plot value
 	# pixels_per_w defines the horizontal scaling factor (2 seems to work)
-	draw.rectangle((pixels_per_w*i,chart_height,4*(i-pixels_per_w),chart_height-scaled_price),ink_color)
+	draw.rectangle((pixels_per_w*i,chart_base_loc,((pixels_per_w*i)-pixels_per_w),(chart_base_loc-scaled_price)),ink_color)
 
 #draw minimum value on chart  <- this doesn't seem to work yet
 # font = ImageFont.truetype(FredokaOne, 15)
@@ -258,7 +258,7 @@ for i in range(0,number_of_vals_to_display):
 # draw.text((4*(minterval-1),110),msg, inky_display.BLACK, font)
 
 # draw the bottom right min price and how many hours that is away
-font = ImageFont.truetype(FredokaOne, 20)
+font = ImageFont.truetype(FredokaOne, 15)
 msg = "min:"+"{0:.1f}".format(lowest_price_next_24h) + "p"
 draw.text((right_column,60), msg, inky_display.BLACK, font)
 # we know how many half hours to min price, now figure it out in hours.
