@@ -54,7 +54,7 @@ First line says run the script if you reboot, second line says run every half ho
 
 - Done! Fix it to the wall! 
 
-NOTE: If you are using the DOThat, you need to edit the above to use octoprice_main_dot.py instead of octoprice_main_inky.py. 
+NOTE: If you are using the DOThat, you need to edit the above to use octoprice_main_dot.py instead of octoprice_main_inky.py. You will also need to run pimoroni's one line curl install script for the DOThat instead of inkyphat. You can go find that yourself, it exists :) 
 
 Another NOTE: Don't be afraid to read my code. I made it as simple as possible, I subscribe to the theory that code doesn't have to be elegant or smart or even fast (in this application anyway!), it has to be maintainable above all else. If you can't understand it, what good is it? Read my code. If you don't understand it, ask me to explain it. We might find some bugs! 
 
