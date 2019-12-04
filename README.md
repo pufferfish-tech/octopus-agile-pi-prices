@@ -41,16 +41,20 @@ This step installs loads of stuff including the PIL libraries and the inkyphat l
 We're ready for the bits specific to this project now! 
 
 In an SSH terminal (putty etc): 
-- open store_prices.py (using nano or whatever) and edit the top lines where you need to change the tariff code and API key. You will find these on your agile dashboard. 
-- run **crontab -e** on the pi and add _something like this_ : 
+- Once ever: run the script that creates an SQLite database file. 
+  ```
+  python3 create_price_db.py
+  ```
+- Open store_prices.py (using nano or whatever) and edit the top lines where you need to change the tariff code and API key. You will find these on your agile dashboard. 
+- Run **crontab -e** on the pi and add _something like this_ : 
 
-```
-@reboot sleep 10; /usr/bin/python3 octoprice_main_inky.py
-*/30 * * * * sleep 20; /usr/bin/python3 octoprice_main_inky.py > /home/pi/cron.log
-05 16 * * * /usr/bin/python3 store_prices.py > /home/pi/cron.log
-```
+  ```
+  @reboot sleep 10; /usr/bin/python3 octoprice_main_inky.py
+  */30 * * * * sleep 20; /usr/bin/python3 octoprice_main_inky.py > /home/pi/cron.log
+  05 16 * * * /usr/bin/python3 store_prices.py > /home/pi/cron.log
+  ```
 
-First line says run the script if you reboot, second line says run every half hour (but delay by 20s to avoid time based issues!), third line is quite important, runs every day at 4:05pm to get the next set of prices. Nothing unusual here. 
+  First line says run the script if you reboot, second line says run every half hour (but delay by 20s to avoid time based issues!),     third line is quite important, runs every day at 4:05pm to get the next set of prices. Nothing unusual here. 
 
 - Done! Fix it to the wall! 
 
