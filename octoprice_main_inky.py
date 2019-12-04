@@ -228,9 +228,9 @@ else:
 
 
 pixels_per_h = 2  # how many pixels 1p is worth
-pixels_per_w = 2  # how many pixels 1/2 hour is worth
+pixels_per_w = 3  # how many pixels 1/2 hour is worth
 chart_base_loc = 104  # location of the bottom of the chart on screen in pixels
-number_of_vals_to_display = 36 # 36 half hours = 18 hours
+number_of_vals_to_display = 48 # 36 half hours = 18 hours
 
 # plot the graph
 lowest_price_next_24h = min(i for i in prices if i > 0)
