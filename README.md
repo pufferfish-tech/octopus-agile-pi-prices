@@ -20,6 +20,41 @@ currently:
 - An sd card (obviously) - 4GB works fine. Raspbian buster LITE version uses only about half of that. No need for any more. 
 - Octopus Agile API key. 
 
+# Preparing the pi
+This is actually more of a tutorial on what I've found to be the best way to just set up a pi to run arbitrary code without the hassle of a mouse keyboard and monitor. It's the path of least resistance!
+
+- Download raspbian buster **lite** from the raspberry pi page https://www.raspberrypi.org/downloads/raspbian/ and flash the .img file onto the sd card using balenaetcher https://www.balena.io/etcher/
+- Add the necessary bits in to make your pi "headless" (a file named just "ssh" and a "wpa_supplicant.conf" with your wifi credentials) https://www.raspberrypi.org/documentation/configuration/wireless/headless.md
+- Boot the pi and _find it somehow_. Most routers have a page that tells you what IP address everything is using, otherwise there's an app on ios and android called "fing". SSH into it using putty or terminal and set it up. I suggest you run the terminal command "passwd" to change the pi password from the default of 'raspberry' to something else. You can also change stuff in "sudo raspi-config". 
+- I recently discovered that the easiest way to transfer files is by SSH file transfer using something like filezilla. Get filezilla and upload the files for this project just into the home directory /home/pi. Connecting in filezilla is easy so long as you remember it's port 22 (standard FTP is 23 so filezilla tries to default to this!). 
+
+-You now need to install the libraries using the one line script from pimoroni if you are using one of their displays. At time of writing this page is for inkyphat: https://learn.pimoroni.com/tutorial/sandyj/getting-started-with-inky-phat and the line to run (in an SSH shell on the pi obviously) is 
+```
+curl https://get.pimoroni.com/inky | bash
+```
+This step installs loads of stuff including the PIL libraries and the inkyphat libraries. Nice one pimoroni. It should be noted that it does throw up some errors during and at the end and these seem fine to ignore. 
+
+- The pi is ready for our code (and anything else you want to do with it!)
+
+# How to use the code
+
+We're ready for the bits specific to this project now! 
+
+In an SSH terminal (putty etc): 
+- open store_prices.py (using nano or whatever) and edit the top lines where you need to change the tariff code and API key. You will find these on your agile dashboard. 
+- run **crontab -e** on the pi and add _something like this_ : 
+
+```
+@reboot sleep 10; /usr/bin/python3 octoprice_main_inky.py
+*/30 * * * * sleep 20; /usr/bin/python3 octoprice_main_inky.py > /home/pi/cron.log
+05 16 * * * /usr/bin/python3 store_prices.py > /home/pi/cron.log
+```
+
+First line says run the script if you reboot, second line says run every half hour (but delay by 20s to avoid time based issues!), third line is quite important, runs every day at 4:05pm to get the next set of prices. Nothing unusual here. 
+
+- Find the bugs. :) 
+
+
 # Considerations
 - I wrote this myself. Because I was bored, and also because I needed to know when to plug the EV in, or start the laundry. It works but it may not be bug free. 
 - The single piece of sensitive data is stored in **plain text** in the file _store_prices.py_. This is in the form of a single API key as a string. If someone were able to access your pi, they could get this. The calls to get the data are done with https:// however. The security audit is up to you. Do the basics - change your pi password, don't open up your firewall to the pi (there's no need) and turn off UPNP in your router, etc. I must stress that I'm sharing this code for you to expand on, and while it is fully operational (I hope!) it doesn't come with the blessing of having been security audited nor is it supported by octopus energy. It is just something I wrote, that people asked me to share. /disclaimer. 
