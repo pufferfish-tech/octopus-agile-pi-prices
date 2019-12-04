@@ -7,9 +7,11 @@ Amazingly they offer an API to allow us nerds to code things.
 
 # Yeah but...what does it do? 
 It's for displaying current prices. It runs in python on a raspberry pi. 
-This is great because it means you don't need to install anything*: The current version of Raspbian has the two things it needs: python and 
+This is great because it means you don't need to install anything*. The current version of Raspbian has the two things it needs: python and SQLite. 
+
 There's 2 versions right now. The first one I wrote was for the pimoroni "display-o-tron" hat, which is a three line LCD with RGB frontlighting. It's good, but it's not graphical, and it made a whine noise (a fault in my unit). 
-So I wrote a second version for the pimoroni inkyphat. This is silent, doesn't self light, consumes no extra power, and oh, it looks awesome! 
+
+So I wrote a second version for the **pimoroni inkyphat** https://shop.pimoroni.com/?q=inkyphat. This is silent, doesn't self light, consumes no extra power, and oh, it looks awesome! 
 
 (* other than the libraries for whatever display device you want...)
 
