@@ -9,7 +9,7 @@ Amazingly they offer an API to allow us nerds to code things.
 It's for displaying current prices. It runs in python on a raspberry pi. 
 This is great because it means you don't need to install anything*. The current version of Raspbian has the two things it needs: python and SQLite. 
 
-![image](https://imgur.com/hymxfbq)
+image of it working here -> https://imgur.com/hymxfbq
 
 There's 2 versions right now. The first one I wrote was for the pimoroni "display-o-tron" hat, which is a three line LCD with RGB frontlighting. It's good, but it's not graphical, and it made a whine noise (a fault in my unit). 
 
