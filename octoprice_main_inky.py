@@ -237,8 +237,8 @@ chart_base_loc = 104  # location of the bottom of the chart on screen in pixels
 number_of_vals_to_display = 48 # 36 half hours = 18 hours
 
 # plot the graph
-lowest_price_next_24h = min(i for i in prices if i > 0)
-
+#lowest_price_next_24h = min(i for i in prices if i > 0)
+lowest_price_next_24h = min(i for i in prices)
 print("lowest price Position:", prices.index(lowest_price_next_24h))
 print("low Value:", lowest_price_next_24h)
 
