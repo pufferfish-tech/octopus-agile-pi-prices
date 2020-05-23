@@ -75,3 +75,6 @@ Another NOTE: I tried to make this code **simple** and readable. If you see any 
 - Support more generic displays
 - Enable other metrics to display so you can choose what to see
 - Better handling of the sqlite database to avoid duplication and truncate (see above)
+
+# Final note
+If you do appreciate this code and are thinking about joining octopus, I'll leave my referral link here https://share.octopus.energy/rust-heron-863 - We both get £50 which is pretty spectacular. 
