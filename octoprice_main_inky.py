@@ -28,7 +28,7 @@ img = Image.new("P", (inky_display.WIDTH, inky_display.HEIGHT))
 draw = ImageDraw.Draw(img)
 
 # find current time and convert to year month day etc
-the_now = datetime.datetime.now()
+the_now = datetime.datetime.now(datetime.timezone.utc)
 the_year = the_now.year
 the_month = the_now.month
 the_hour = the_now.hour
@@ -55,7 +55,7 @@ current_price = row[5] # literally this is hardcoded tuple. DONT ADD ANY EXTRA F
 
 # Find Next Price
 # find current time and convert to year month day etc
-the_now = datetime.datetime.now()
+the_now = datetime.datetime.now(datetime.timezone.utc)
 now_plus_10 = the_now + datetime.timedelta(minutes = 30)
 the_year = now_plus_10.year
 the_month = now_plus_10.month
@@ -85,7 +85,7 @@ next_price = row[5] # literally this is peak tuple. DONT ADD ANY EXTRA FIELDS TO
 
 # Find Next+1 Price
 # find current time and convert to year month day etc
-the_now = datetime.datetime.now()
+the_now = datetime.datetime.now(datetime.timezone.utc)
 now_plus_10 = the_now + datetime.timedelta(minutes = 60)
 the_year = now_plus_10.year
 the_month = now_plus_10.month
@@ -117,7 +117,7 @@ nextp1_price = row[5] # literally this is peak tuple. DONT ADD ANY EXTRA FIELDS 
 
 # Find Next+2 Price
 # find current time and convert to year month day etc
-the_now = datetime.datetime.now()
+the_now = datetime.datetime.now(datetime.timezone.utc)
 now_plus_10 = the_now + datetime.timedelta(minutes = 90)
 the_year = now_plus_10.year
 the_month = now_plus_10.month
@@ -146,7 +146,7 @@ nextp2_price = row[5] # literally this is peak tuple. DONT ADD ANY EXTRA FIELDS 
 prices = []
 for offset in range(0, 48):  ##24h = 48 segments
 	min_offset = 30 * offset
-	the_now = datetime.datetime.now()
+	the_now = datetime.datetime.now(datetime.timezone.utc)
 	now_plus_offset = the_now + datetime.timedelta(minutes=min_offset)
 	the_year = now_plus_offset.year
 	the_month = now_plus_offset.month
