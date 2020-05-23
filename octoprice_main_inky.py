@@ -18,6 +18,8 @@ import sqlite3
 conn = sqlite3.connect('octoprice.sqlite')
 cur = conn.cursor()
 import datetime
+import pytz
+import time
 
 ##  -- Display type = red. Change below if you have the yellow
 inky_display = InkyPHAT("red")
@@ -29,6 +31,8 @@ draw = ImageDraw.Draw(img)
 
 # find current time and convert to year month day etc
 the_now = datetime.datetime.now(datetime.timezone.utc)
+the_now_local = the_now.astimezone(pytz.timezone('Europe/London'))
+
 the_year = the_now.year
 the_month = the_now.month
 the_hour = the_now.hour
@@ -271,8 +275,11 @@ draw.text((right_column,75), msg, inky_display.BLACK, font)
 # note that this next time will not give you an exact half hour if you don't run this at an exact half hour eg cron
 # because it's literally just adding n * 30 mins!
 # could in future add some code to round to 30 mins increments but it works for now.
+
+
+
 min_offset = prices.index(lowest_price_next_24h) * 30
-time_of_cheapest = the_now + datetime.timedelta(minutes=min_offset)
+time_of_cheapest = the_now_local + datetime.timedelta(minutes=min_offset)
 print("cheapest at " + str(time_of_cheapest))
 print("which is: "+ str(time_of_cheapest.time())[0:5])
 time_of_cheapest_formatted = "at " + (str(time_of_cheapest.time())[0:5])
