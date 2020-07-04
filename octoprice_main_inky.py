@@ -166,7 +166,7 @@ for offset in range(0, 48):  ##24h = 48 segments
 	# get price
 	row = cur.fetchone()
 	if row is None:
-		prices.append(0) # we don't have that price yet!
+		prices.append(999) # we don't have that price yet!
 	else:
 		prices.append(row[5])
 
@@ -246,16 +246,17 @@ print("low Value:", lowest_price_next_24h)
 # go through each hour and get the value
 
 for i in range(0,number_of_vals_to_display):
-	scaled_price = prices[i] * pixels_per_h # we're scaling it by the value above
+	if prices[i] < 999:
+		scaled_price = prices[i] * pixels_per_h # we're scaling it by the value above
 
-	if prices[i] <= (lowest_price_next_24h + 1):   # if within 1p of the lowest price, display in black
-		ink_color = inky_display.BLACK
-	else:
-		ink_color = inky_display.RED
+		if prices[i] <= (lowest_price_next_24h + 1):   # if within 1p of the lowest price, display in black
+			ink_color = inky_display.BLACK
+		else:
+			ink_color = inky_display.RED
 
-	# takes a bit of thought this next bit, draw a rectangle from say x =  2i to 2(i-1) for each plot value
-	# pixels_per_w defines the horizontal scaling factor (2 seems to work)
-	draw.rectangle((pixels_per_w*i,chart_base_loc,((pixels_per_w*i)-pixels_per_w),(chart_base_loc-scaled_price)),ink_color)
+		# takes a bit of thought this next bit, draw a rectangle from say x =  2i to 2(i-1) for each plot value
+		# pixels_per_w defines the horizontal scaling factor (2 seems to work)
+		draw.rectangle((pixels_per_w*i,chart_base_loc,((pixels_per_w*i)-pixels_per_w),(chart_base_loc-scaled_price)),ink_color)
 
 #draw minimum value on chart  <- this doesn't seem to work yet
 # font = ImageFont.truetype(FredokaOne, 15)
