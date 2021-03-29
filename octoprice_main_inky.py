@@ -3,10 +3,8 @@
 # For example --->   */30 * * * * sleep 20; /usr/bin/python3 octoprice_main_inky.py > /home/pi/cron.log
 
 # NOTE - USAGE
-# This script *won't work* unless you have created a db (python3 create_price_db.py)
-# And run (python3 store_prices.py) at least once in the last 'n' hours (n is variable, it updates 4pm every day)
-# You also need to update store_prices.py to include your own API access credentials and tariff.
-
+# This script *won't work* unless you have run (python3 store_prices.py) at least once in the last 'n' hours (n is variable, it updates 4pm every day)
+# You also need to update store_prices.py to include your own DNO region.
 
 from inky.auto import auto
 #from font_hanken_grotesk import HankenGroteskBold, HankenGroteskMedium  # should you choose to switch to gross fonts
