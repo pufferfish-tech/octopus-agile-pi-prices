@@ -78,3 +78,4 @@ Another NOTE: I tried to make this code **simple** and readable. If you see any 
 
 # Final note
 If you do appreciate this code and are thinking about joining octopus, I'll leave my referral link here https://share.octopus.energy/rust-heron-863 - We both get £50 which is pretty spectacular. 
+Also if you're into home automation or random tinkering then subscribe to my youtube stuff here -> https://www.youtube.com/channel/UCl_uGYJe9KW9fJWBMq1A9kw
