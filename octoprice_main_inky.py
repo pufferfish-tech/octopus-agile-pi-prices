@@ -3,10 +3,8 @@
 # For example --->   */30 * * * * sleep 20; /usr/bin/python3 octoprice_main_inky.py > /home/pi/cron.log
 
 # NOTE - USAGE
-# This script *won't work* unless you have created a db (python3 create_price_db.py)
-# And run (python3 store_prices.py) at least once in the last 'n' hours (n is variable, it updates 4pm every day)
-# You also need to update store_prices.py to include your own API access credentials and tariff.
-
+# This script *won't work* unless you have run (python3 store_prices.py) at least once in the last 'n' hours (n is variable, it updates 4pm every day)
+# You also need to update store_prices.py to include your own DNO region.
 
 from inky.auto import auto
 #from font_hanken_grotesk import HankenGroteskBold, HankenGroteskMedium  # should you choose to switch to gross fonts
@@ -15,8 +13,6 @@ from font_fredoka_one import FredokaOne  # this is the font we're currently usin
 from PIL import Image, ImageFont, ImageDraw
 
 import sqlite3
-conn = sqlite3.connect('octoprice.sqlite')
-cur = conn.cursor()
 import datetime
 import pytz
 import time
@@ -26,7 +22,16 @@ try:
     inky_display = auto(ask_user=False, verbose=True)
 except TypeError:
     raise TypeError("You need to update the Inky library to >= v1.1.0")
-## --   ----------------------------------------------------
+
+try:
+    # connect to the database in rw mode so we can catch the error if it doesn't exist
+    DB_URI = 'file:{}?mode=rw'.format(pathname2url('agileprices.sqlite'))
+    conn = sqlite3.connect(DB_URI, uri=True)
+    cur = conn.cursor()
+    print('Connected to database...')
+except sqlite3.OperationalError as error:
+    # handle missing database case
+    raise SystemExit('Database not found - you need to run store_prices.py first.') from error
 
 inky_display.set_border(inky_display.WHITE)
 img = Image.new("P", (inky_display.WIDTH, inky_display.HEIGHT))
