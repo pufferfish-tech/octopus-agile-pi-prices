@@ -16,6 +16,7 @@ import sqlite3
 import datetime
 import pytz
 import time
+from urllib.request import pathname2url
 
 ##  -- Detect display type automatically
 try:
