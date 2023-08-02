@@ -100,9 +100,9 @@ You should see your display update with the current price!
 - Run `crontab -e` on the pi and add: 
 
   ```
-  @reboot sleep 10; /usr/bin/python3 octoprice_main_inky.py
-  */30 * * * * sleep 20; /usr/bin/python3 octoprice_main_inky.py > /home/pi/cron.log
-  05 16 * * * /usr/bin/python3 store_prices.py -r <your region> -t <your tariff> > /home/pi/cron.log
+  @reboot sleep 10; cd /home/$USER/octopus-agile-pi-prices; /usr/bin/python3 octoprice_main_inky.py > /home/$USER/cron.log
+  */30 * * * * sleep 20; cd /home/$USER/octopus-agile-pi-prices; /usr/bin/python3 octoprice_main_inky.py > /home/$USER/cron.log
+  05 16 * * * cd /home/$USER/octopus-agile-pi-prices; /usr/bin/python3 store_prices.py -r <your region> -t <your tariff> > /home/$USER/cron.log
   ```
   Substituting the tariff and region as before.
 
