@@ -1,0 +1,2 @@
+pytz==2023.3
+font-fredoka-one==0.0.4
