@@ -15,9 +15,8 @@ import requests
 
 
 # hopefully these won't ever change
-AGILE_TARIFF_BASE = (
-  'https://api.octopus.energy/v1/products/AGILE-18-02-21/electricity-tariffs/E-1R-AGILE-18-02-21-')
-AGILE_TARIFF_TAIL = "/standard-unit-rates/"
+AGILE_TARIFF_FORMAT = (
+  'https://api.octopus.energy/v1/products/AGILE-#date#/electricity-tariffs/E-1R-AGILE-#date#-#region#/standard-unit-rates/')
 
 MAX_RETRIES = 15 # give up once we've tried this many times to get the prices from the API
 
@@ -189,12 +188,20 @@ K = South Wales
 L = South West England
 M = Yorkshire""",
                     choices = ['A','B','C','D','E','F','G','P','N','J','H','K','L','M'])
+parser.add_argument('--tariff-type', '-t', nargs=1, type=str, dest='tariff', action='store', required=True, help="""
+Find it by logging in at https://octopus.energy/dashboard/new/accounts/personal-details/api-access and scrolling to "Unit rates"
+18-02-21 – The original version capped at 35p per unit
+22-07-22 – The cap rose to 55p
+22-08-31 – The cap was increased to 78p
+VAR-22-10-19 – This version raised the cap to £1 per unit and also introduced a new formula.
+FLEX-22-11-25 – Cap stays at £1 per unit but new formula only deducts 17.9p from higher unit prices.
+    """)
 args = parser.parse_args()
 print('Selected region ' + args.region[0])
-agile_tariff_region = args.region[0]
+print('Selected tariff ' + args.tariff[0])
 
 # Build the API for the request - public API so no authentication required
-AGILE_TARIFF_URI = (AGILE_TARIFF_BASE + agile_tariff_region + AGILE_TARIFF_TAIL)
+AGILE_TARIFF_URI = AGILE_TARIFF_FORMAT.replace("#date#", args.tariff[0]).replace("#region#", args.region[0])
 
 data_rows = get_prices_from_api(AGILE_TARIFF_URI)
 
