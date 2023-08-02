@@ -27,38 +27,86 @@ currently:
 # Preparing the pi
 This is actually more of a tutorial on what I've found to be the best way to just set up a pi to run arbitrary code without the hassle of a mouse keyboard and monitor. It's the path of least resistance!
 
-- Download raspbian buster **lite** from the raspberry pi page https://www.raspberrypi.org/downloads/raspbian/ and flash the .img file onto the sd card using balenaetcher https://www.balena.io/etcher/
-- Add the necessary bits in to make your pi "headless" (a file named just "ssh" and a "wpa_supplicant.conf" with your wifi credentials) https://www.raspberrypi.org/documentation/configuration/wireless/headless.md
-- Boot the pi and _find it somehow_. Most routers have a page that tells you what IP address everything is using, otherwise there's an app on ios and android called "fing". SSH into it using putty or terminal and set it up. I suggest you run the terminal command "passwd" to change the pi password from the default of 'raspberry' to something else. You can also change stuff in "sudo raspi-config". 
-- I recently discovered that the easiest way to transfer files is by SSH file transfer using something like filezilla. Get filezilla and upload the files for this project just into the home directory /home/pi. Connecting in filezilla is easy so long as you remember it's port 22 (standard FTP is 23 so filezilla tries to default to this!). 
+- Download Respberry Pi Imager from the raspberry pi page https://www.raspberrypi.org/downloads/raspbian/
+- Press "Operating system" then select  "Raspberry Pi OS (Other)" > "Raspberry Pi OS Lite (32 bit)"
+- Choose your storage
+- Click the advanced cog icon, then fill out the info to enable headless boot
+  - You could enter "octoprice" as the hostname
+  - Enable SSH, and enter your public key or a password
+  - Set a username and password
+  - Configure Wireless LAN
+  - Set your locale
+  - Save
+- Press write
 
--You now need to install the libraries using the one line script from pimoroni if you are using one of their displays. At time of writing this page is for inkyphat: https://learn.pimoroni.com/tutorial/sandyj/getting-started-with-inky-phat and the line to run (in an SSH shell on the pi obviously) is 
-```
-curl https://get.pimoroni.com/inky | bash
-```
-This step installs loads of stuff including the PIL libraries and the inkyphat libraries. Nice one pimoroni. It should be noted that it does throw up some errors during and at the end and these seem fine to ignore. 
+Once imaged, put the SD card in your Pi and wait a while for it to boot (it can take 5-10 minutes). It should connect to your wifi, then you can ssh to it using `ssh <username>@<hostname>.local` replacing the username and hostname for those entered when imaging
 
-- The pi is ready for our code (and anything else you want to do with it!)
+Once you have an ssh terminal, you can get started with setting up our project
 
-# How to use the code
+# Installing
 
-We're ready for the bits specific to this project now! 
+- Install the libraries for inky phat using the [one line script from pimoroni](https://learn.pimoroni.com/tutorial/sandyj/getting-started-with-inky-phat)
 
-In an SSH terminal (putty etc): 
-- Once ever: run the script that creates an SQLite database file. 
+  ```
+  curl https://get.pimoroni.com/inky | bash
+  ```
+
+- Install git:
+
+  ```
+  sudo apt install git
+  ```
+
+- Clone our project
+
+  ```
+  git clone https://github.com/pufferfish-tech/octopus-agile-pi-prices.git
+  cd octopus-agile-pi-prices
+  ```
+
+- Install requirements
+
+  ```
+  pip install -r requirements.txt
+  ```
+
+- Setup the database
+
   ```
   python3 create_price_db.py
   ```
-- Open store_prices.py (using nano or whatever) and edit the top lines where you need to change the tariff code. You will find this on your agile dashboard. It's basically a string ending in the letter A to P depending where you live.
-- Run **crontab -e** on the pi and add _something like this_ : 
+
+You'll need to obtain some information from Octopus for the next step. Go to the [octopus developer page](https://octopus.energy/dashboard/new/accounts/personal-details/api-access) and scroll to "Unit rates". There you will see a URL, for example "https://api.octopus.energy/v1/products/AGILE-FLEX-22-11-25/electricity-tariffs/E-1R-AGILE-FLEX-22-11-25-M/standard-unit-rates/". Look at this part: "E-1R-AGILE-FLEX-22-11-25-M". This is in the format `E-1R-AGILE-<tariff>-<region>`. The tariff is the part following "AGILE-", e.g. "FLEX-22-11-25". The region is the letter at the end, e.g. "M".
+
+Now its time to test our scripts:
+
+- Get prices
+
+  ```
+  python3 store_prices.py -r <your region> -t <your tariff>
+  ```
+
+- Update the display
+
+  ```
+  python3 octoprice_main_inky.py
+  ```
+
+
+You should see your display update with the current price!
+
+# Set up cron to update regularly
+
+- Run `crontab -e` on the pi and add: 
 
   ```
   @reboot sleep 10; /usr/bin/python3 octoprice_main_inky.py
   */30 * * * * sleep 20; /usr/bin/python3 octoprice_main_inky.py > /home/pi/cron.log
-  05 16 * * * /usr/bin/python3 store_prices.py > /home/pi/cron.log
+  05 16 * * * /usr/bin/python3 store_prices.py -r <your region> -t <your tariff> > /home/pi/cron.log
   ```
+  Substituting the tariff and region as before.
 
-  First line says run the script if you reboot, second line says run every half hour (but delay by 20s to avoid time based issues!),     third line is quite important, runs every day at 4:05pm to get the next set of prices. Nothing unusual here. 
+  The first line runs the script if you reboot, the second line runs every half hour (but delay by 20s to avoid time based issues!), the third line runs every day at 4:05pm to get the next set of prices.
 
 - Done! Fix it to the wall! 
 
