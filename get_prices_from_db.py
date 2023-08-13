@@ -25,7 +25,7 @@ def get_prices_from_db(num_entries):
 
     current_time = time.time()
     current_time -= current_time % (30 * 60) # round down to nearest 30m
-    formatted_date = datetime.strftime(datetime.fromtimestamp(current_time), "%Y-%m-%d %H:%M:%S")
+    formatted_date = datetime.strftime(datetime.utcfromtimestamp(current_time), "%Y-%m-%d %H:%M:%S")
     
     # select next 24h from db where record >= the above
     cur.execute("SELECT * FROM prices WHERE valid_from>=? ORDER BY valid_from ASC LIMIT ?", (formatted_date, num_entries))

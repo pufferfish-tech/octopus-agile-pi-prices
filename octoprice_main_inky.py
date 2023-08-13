@@ -13,7 +13,7 @@ from font_fredoka_one import FredokaOne  # this is the font we're currently usin
 from PIL import Image, ImageFont, ImageDraw
 
 import sqlite3
-import datetime
+from datetime import datetime, timezone
 import pytz
 import time
 from urllib.request import pathname2url
@@ -54,7 +54,7 @@ time_to_min_price = min_price_index / 2
 
 min_price_str = "{0:.1f}p".format(min_price['price'])
 min_price_duration_str = "{0:.1f}hrs".format(min_price_index/2)
-min_price_time = min_price['valid_from'][11:16]
+min_price_time = datetime.strptime(min_price['valid_from'], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).astimezone(pytz.timezone('Europe/London')).strftime("%H:%M")
 print("Lowest price {0} in {1} at {2}".format(min_price_str, min_price_duration_str, min_price_time))
 
 
