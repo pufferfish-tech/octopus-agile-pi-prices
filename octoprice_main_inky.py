@@ -62,6 +62,17 @@ def colour_for_price(price):
 	return inky_display.RED if price > low_price else inky_display.BLACK
 
 
+def draw_current_price(price, current_font_size, current_y_offset):
+	font = ImageFont.truetype(FredokaOne, current_font_size)
+	message = "{0:.1f}".format(price) + "p"
+	w, h = font.getsize(message)
+	#x = (inky_display.WIDTH / 2) - (w / 2)
+	#y = (inky_display.HEIGHT / 2) - (h / 2)
+	x = 0
+	y = current_y_offset
+	draw.text((x, y), message, colour_for_price(price), font)
+
+
 def draw_next_price(index, size, x_offset):
 	if(len(prices) < index + 1):
 		return
@@ -88,16 +99,14 @@ def draw_graph(bar_width, bar_height_per_p, bar_base_offset):
 		draw.rectangle((bar_width*i,bar_base_offset,bar_width*(i-1),(bar_base_offset-scaled_price)),ink_color)
 
 
-def draw_all(current_font_size, current_y_offset, right_column_offset, right_column_text_size, bar_width, bar_height_per_p, bar_base_offset, lowest_price_font_size, lowest_price_y_offset):
+def draw_lowest_price_text(right_column_offset, lowest_price_y_offset, lowest_price_font_size, index, msg):
+	font = ImageFont.truetype(FredokaOne, lowest_price_font_size)
+	draw.text((right_column_offset,lowest_price_y_offset + lowest_price_font_size * index), msg, inky_display.BLACK, font)
+
+
+def draw_all(current_font_size, current_y_offset, right_column_offset, right_column_text_size, bar_width, bar_height_per_p, bar_base_offset, lowest_price_font_size):
 	# Current price
-	font = ImageFont.truetype(FredokaOne, current_font_size)
-	message = "{0:.1f}".format(prices[0]['price']) + "p"
-	w, h = font.getsize(message)
-	#x = (inky_display.WIDTH / 2) - (w / 2)
-	#y = (inky_display.HEIGHT / 2) - (h / 2)
-	x = 0
-	y = current_y_offset
-	draw.text((x, y), message, colour_for_price(prices[0]['price']), font)
+	draw_current_price(prices[0]['price'], current_font_size, current_y_offset)
 
 
 	# Next prices
@@ -112,16 +121,11 @@ def draw_all(current_font_size, current_y_offset, right_column_offset, right_col
 
 	# Lowest price
 	# draw the bottom right min price and how many hours that is away
-	font = ImageFont.truetype(FredokaOne, lowest_price_font_size)
-	msg = "min:"+min_price_str
-	draw.text((right_column_offset,lowest_price_y_offset), msg, inky_display.BLACK, font)
-	# we know how many half hours to min price, now figure it out in hours.
-	msg = "in:"+min_price_duration_str
-	draw.text((right_column_offset,lowest_price_y_offset + lowest_price_font_size), msg, inky_display.BLACK, font)
-	# get time of cheapest
-	msg = "at " + min_price_time
-	draw.text((right_column_offset,lowest_price_y_offset + lowest_price_font_size * 2), msg, inky_display.BLACK, font)
-	
+	lowest_price_y_offset = right_column_text_size * 3
+	draw_lowest_price_text(right_column_offset, lowest_price_y_offset, lowest_price_font_size, 0, "min:"+min_price_str)
+	draw_lowest_price_text(right_column_offset, lowest_price_y_offset, lowest_price_font_size, 1, "in:"+min_price_duration_str)
+	draw_lowest_price_text(right_column_offset, lowest_price_y_offset, lowest_price_font_size, 2, "at:"+min_price_time)
+
 
 if (inky_display.WIDTH == 212): #low res display
 	draw_all(
@@ -132,8 +136,7 @@ if (inky_display.WIDTH == 212): #low res display
 		bar_width=3,
 		bar_height_per_p=2,
 		bar_base_offset=104,
-		lowest_price_font_size=15,
-		lowest_price_y_offset=60
+		lowest_price_font_size=15
 		)
 
 
@@ -146,8 +149,7 @@ else: #high res display
 		bar_width=3.5,
 		bar_height_per_p=2.3,
 		bar_base_offset=121,
-		lowest_price_font_size=16,
-		lowest_price_y_offset=69
+		lowest_price_font_size=16
 		)
 
 
