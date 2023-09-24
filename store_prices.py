@@ -20,6 +20,8 @@ AGILE_TARIFF_FORMAT = (
 
 MAX_RETRIES = 15 # give up once we've tried this many times to get the prices from the API
 
+MIN_NUM_FUTURE_PRICES = 6 # min number of prices in db before we try to fetch new prices
+
 
 def get_prices_from_api(request_uri: str) -> dict:
     """using the provided URI, request data from the Octopus API and return a JSON object.
@@ -166,6 +168,18 @@ def remove_old_prices(age: str):
         print('Failed while trying to remove old prices from database: ', error)
 
 
+def num_prices_in_db():
+    if not cursor:
+        raise SystemExit('Database connection lost before getting num prices')
+    try:
+        cursor.execute("SELECT COUNT(*) FROM prices")
+        selected_rows = cursor.fetchall()
+        return selected_rows[0][0]
+    except sqlite3.Error as error:
+        print('Failed while trying to fetch num rows from database: ', error)
+        return 0
+
+
 # let's get the region from the command line and make sure it's allowed!
 parser = argparse.ArgumentParser(description=('Retrieve Octopus Agile prices'
                                               'and store in a SQLite database'),
@@ -203,15 +217,12 @@ print('Selected tariff ' + args.tariff[0])
 # Build the API for the request - public API so no authentication required
 AGILE_TARIFF_URI = AGILE_TARIFF_FORMAT.replace("#date#", args.tariff[0]).replace("#region#", args.region[0])
 
-data_rows = get_prices_from_api(AGILE_TARIFF_URI)
-
 try:
     # connect to the database in rw mode so we can catch the error if it doesn't exist
     DB_URI = 'file:{}?mode=rw'.format(pathname2url('agileprices.sqlite'))
     conn = sqlite3.connect(DB_URI, uri=True)
     cursor = conn.cursor()
     print('Connected to database...')
-
 except sqlite3.OperationalError:
     # handle missing database case
     print('No database found. Creating a new one...')
@@ -224,9 +235,17 @@ except sqlite3.OperationalError:
     conn.commit()
     print('Database created... ')
 
-insert_data(data_rows)
 
 remove_old_prices('2 days')
+
+min_num_prices = 2 * 24 * 2 + MIN_NUM_FUTURE_PRICES
+
+if num_prices_in_db() < min_num_prices:
+    data_rows = get_prices_from_api(AGILE_TARIFF_URI)
+
+    insert_data(data_rows)
+else:
+    print('Not fetching new prices yet')
 
 # finish up the database operation
 if conn:
