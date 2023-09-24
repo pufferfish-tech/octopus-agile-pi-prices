@@ -38,6 +38,8 @@ if len(prices) == 0:
 	print('No prices found!')
 	exit(1)
 
+print("Found {0} prices in db".format(len(prices)))
+
 min_price = {'price': 999}
 min_price_index = 0
 total_price = 0
@@ -74,7 +76,7 @@ def draw_current_price(price, current_font_size, current_y_offset):
 
 
 def draw_next_price(index, size, x_offset):
-	if(len(prices) < index + 1):
+	if(len(prices) <= index + 1):
 		return
 
 	# NEXT
