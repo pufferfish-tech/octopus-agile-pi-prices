@@ -18,8 +18,16 @@ import pytz
 import time
 from urllib.request import pathname2url
 import get_prices_from_db
+import store_prices
+import sys
 
 low_price = 14.8
+
+# if arguments provided, attempt to update prices
+if len(sys.argv) > 1:
+	# if prices not updated, don't update display
+	if not store_prices():
+		exit(0)
 
 ##  -- Detect display type automatically
 try:
