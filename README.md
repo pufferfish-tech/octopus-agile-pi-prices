@@ -51,12 +51,6 @@ Once you have an ssh terminal, you can get started with setting up our project
   curl https://get.pimoroni.com/inky | bash
   ```
 
-- Install git:
-
-  ```
-  sudo apt install git
-  ```
-
 - Clone our project
 
   ```
@@ -102,11 +96,11 @@ You should see your display update with the current price!
   ```
   @reboot sleep 10; cd /home/$USER/octopus-agile-pi-prices; /usr/bin/python3 octoprice_main_inky.py > /home/$USER/cron.log
   */30 * * * * sleep 20; cd /home/$USER/octopus-agile-pi-prices; /usr/bin/python3 octoprice_main_inky.py > /home/$USER/cron.log
-  05 16 * * * cd /home/$USER/octopus-agile-pi-prices; /usr/bin/python3 store_prices.py -r <your region> -t <your tariff> > /home/$USER/cron.log
+  05 * * * * cd /home/$USER/octopus-agile-pi-prices; /usr/bin/python3 octoprice_main_inky.py -r <your region> -t <your tariff> > /home/$USER/cron.log
   ```
   Substituting the tariff and region as before.
 
-  The first line runs the script if you reboot, the second line runs every half hour (but delay by 20s to avoid time based issues!), the third line runs every day at 4:05pm to get the next set of prices.
+  The first line runs the script if you reboot, the second line runs every half hour (but delay by 20s to avoid time based issues!), the third line runs every hour at :05pm to get the next set of prices (it only fetches from the API if there are less than 3 hours cached prices left).
 
 - Done! Fix it to the wall! 
 
