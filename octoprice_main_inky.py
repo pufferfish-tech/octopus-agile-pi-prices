@@ -40,7 +40,7 @@ img = Image.new("P", (inky_display.WIDTH, inky_display.HEIGHT))
 draw = ImageDraw.Draw(img)
 
 # array of up to 48 dicts, sorted by time
-prices = get_prices_from_db(48)
+prices = get_prices_from_db('agileprices.sqlite', 48)
 
 if len(prices) == 0:
 	print('No prices found!')

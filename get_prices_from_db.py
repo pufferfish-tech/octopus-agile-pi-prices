@@ -10,10 +10,10 @@ def dict_factory(cursor, row):
     return {key: value for key, value in zip(fields, row)}
 
 
-def get_prices_from_db(num_entries):
+def get_prices_from_db(file, num_entries):
     try:
         # connect to the database in rw mode so we can catch the error if it doesn't exist
-        DB_URI = 'file:{}?mode=rw'.format(pathname2url('agileprices.sqlite'))
+        DB_URI = 'file:{}?mode=rw'.format(pathname2url(file))
         conn = sqlite3.connect(DB_URI, uri=True)
         conn.row_factory = dict_factory
         cur = conn.cursor()
