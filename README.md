@@ -51,12 +51,6 @@ Once you have an ssh terminal, you can get started with setting up our project
   curl https://get.pimoroni.com/inky | bash
   ```
 
-- Install git:
-
-  ```
-  sudo apt install git
-  ```
-
 - Clone our project
 
   ```
