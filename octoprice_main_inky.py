@@ -351,7 +351,7 @@ else: #high res display
 	#lowest_price_next_24h = min(i for i in prices if i > 0)
 	lowest_price_next_24h = min(i for i in prices)
 	if (lowest_price_next_24h < 0):
-		chart_base_loc = 104 + lowest_price_next_24h*pixels_per_h - 2 # if we have any negative prices, shift the base of the graph up! 
+		chart_base_loc = chart_base_loc + lowest_price_next_24h*pixels_per_h - 2 # if we have any negative prices, shift the base of the graph up! 
 
 	print("lowest price Position:", prices.index(lowest_price_next_24h))
 	print("low Value:", lowest_price_next_24h)
@@ -395,9 +395,9 @@ else: #high res display
 	time_of_cheapest = the_now_local + datetime.timedelta(minutes=min_offset)
 	print("cheapest at " + str(time_of_cheapest))
 	print("which is: "+ str(time_of_cheapest.time())[0:5])
-	time_of_cheapest_formatted = "at " + (str(time_of_cheapest.time())[0:5])
-	font = ImageFont.truetype(FredokaOne, 16)
-	draw.text((right_column,101), time_of_cheapest_formatted, inky_display.BLACK, font)
+	time_of_cheapest_formatted = "Updated " + (str(the_now_local.time())[0:5])
+	font = ImageFont.truetype(FredokaOne, 11)
+	draw.text((right_column,105), time_of_cheapest_formatted, inky_display.BLACK, font)
 
 
 # render the actual image onto the display
