@@ -38,6 +38,67 @@ inky_display.set_border(inky_display.WHITE)
 img = Image.new("P", (inky_display.WIDTH, inky_display.HEIGHT))
 draw = ImageDraw.Draw(img)
 
+# --- layout helpers: keep the chart clear of the big price -------------------------------------------------------
+# The big current price is drawn first, then the chart is fitted into the space left underneath it, so the bars
+# can never be drawn over the price. (Previously the bars were a fixed 2 pixels per penny up from the bottom of the
+# screen, which climbed straight through the price text for anything above roughly 18p.)
+CHART_MIN_SCALE_P = 20  # the chart is always at least tall enough for this many pence, so a flat cheap day isn't stretched to fill it
+CHART_MAX_SCALE_P = 60  # bars dearer than this are drawn full height, so one big spike can't squash the rest of the day flat
+
+def draw_big_price(message, colour, start_size, max_right, top_margin=1, min_size=30):
+	"""Draw the large current price in the top left.
+	It is drawn on a scratch image first so we can measure the real ink: the text is moved up so it starts at the top
+	edge, and the font is shrunk if needed so it stays left of max_right (otherwise it runs into the right hand column).
+	Returns the y of the lowest pixel of the text so the chart knows where it can start."""
+	size = start_size
+	while True:
+		font = ImageFont.truetype(FredokaOne, size)
+		scratch = Image.new("P", (inky_display.WIDTH, inky_display.HEIGHT))
+		ImageDraw.Draw(scratch).text((0, 0), message, 1, font)
+		left, top, right, bottom = scratch.getbbox()
+		if right <= max_right or size <= min_size:
+			break
+		size -= 2
+	y = top_margin - top
+	draw.text((0, y), message, colour, font)
+	return bottom + y
+
+def draw_chart(prices, lowest_price, pixels_per_w, chart_top, chart_bottom):
+	"""Plot the prices as bars between pixel rows chart_top and chart_bottom, scaled so they fit that space."""
+	known = [p for p in prices if p < 999]  # 999 means we don't have that price yet
+	if not known:
+		return
+	top_price = min(max(max(known), CHART_MIN_SCALE_P), CHART_MAX_SCALE_P)
+	bottom_price = min(lowest_price, 0)  # only goes below zero if there are negative prices
+	pixels_per_p = max(chart_bottom - chart_top, 1) / float(top_price - bottom_price)
+	zero_y = chart_bottom - int(round(-bottom_price * pixels_per_p))  # the pixel row that 0p sits on
+
+	for i in range(0, len(prices)):
+		price = prices[i]
+		if price >= 999:
+			continue
+		bar = int(round(abs(price) * pixels_per_p))
+		if price != 0:
+			bar = max(bar, 1)
+
+		if price <= (lowest_price + 1):  # if within 1p of the lowest price, display in black
+			ink_color = inky_display.BLACK
+		else:
+			ink_color = inky_display.RED
+
+		# each bar is pixels_per_w wide (this overlaps its neighbour by a pixel, which is what joins them into one skyline)
+		x0 = int(pixels_per_w * i - pixels_per_w)
+		x1 = int(pixels_per_w * i)
+		if price >= 0:
+			y0, y1 = max(zero_y - bar, chart_top), zero_y
+		else:
+			y0, y1 = zero_y, min(zero_y + bar, chart_bottom)
+		draw.rectangle((x0, y0, x1, y1), ink_color)
+
+	if bottom_price < 0:  # negative prices: mark where 0p is
+		draw.line((0, zero_y, int(pixels_per_w * (len(prices) - 1)), zero_y), fill=inky_display.BLACK)
+
+
 # find current time and convert to year month day etc
 the_now = datetime.datetime.now(datetime.timezone.utc)
 the_now_local = the_now.astimezone(pytz.timezone('Europe/London'))
@@ -181,20 +242,15 @@ for offset in range(0, 48):  ##24h = 48 segments
 
 if (inky_display.WIDTH == 212): #low res display
 
-	font = ImageFont.truetype(FredokaOne, 60)
 	message = "{0:.1f}".format(current_price) + "p"
-	w, h = font.getsize(message)
-	#x = (inky_display.WIDTH / 2) - (w / 2)
-	#y = (inky_display.HEIGHT / 2) - (h / 2)
-	x = 0
-	y = -5
-
-	if (current_price > 14.8):
-		draw.text((x, y), message, inky_display.RED, font)
-	else:
-		draw.text((x, y), message, inky_display.BLACK, font)
 
 	right_column = 145
+
+	# draw the big current price: moved up to the top edge, and shrunk if it would run into the right hand column
+	if (current_price > 14.8):
+		price_text_bottom = draw_big_price(message, inky_display.RED, 60, right_column - 2)
+	else:
+		price_text_bottom = draw_big_price(message, inky_display.BLACK, 60, right_column - 2)
 
 	# NEXT
 	message = "2:" + "{0:.1f}".format(next_price) + "p"
@@ -231,35 +287,18 @@ if (inky_display.WIDTH == 212): #low res display
 	else:
 		draw.text((x, y), message, inky_display.BLACK, font)
 
-	pixels_per_h = 2  # how many pixels 1p is worth
 	pixels_per_w = 3  # how many pixels 1/2 hour is worth
-	chart_base_loc = 104  # location of the bottom of the chart on screen in pixels
-	#chart_base_loc = 85  # location of the bottom of the chart on screen in pixels
 	number_of_vals_to_display = 48 # 36 half hours = 18 hours
 
 	# plot the graph
 	#lowest_price_next_24h = min(i for i in prices if i > 0)
 	lowest_price_next_24h = min(i for i in prices)
-	if (lowest_price_next_24h < 0):
-		chart_base_loc = 104 + lowest_price_next_24h*pixels_per_h - 2 # if we have any negative prices, shift the base of the graph up! 
 
 	print("lowest price Position:", prices.index(lowest_price_next_24h))
 	print("low Value:", lowest_price_next_24h)
 
-	# go through each hour and get the value
-
-	for i in range(0,number_of_vals_to_display):
-		if prices[i] < 999:
-			scaled_price = prices[i] * pixels_per_h # we're scaling it by the value above
-
-			if prices[i] <= (lowest_price_next_24h + 1):   # if within 1p of the lowest price, display in black
-				ink_color = inky_display.BLACK
-			else:
-				ink_color = inky_display.RED
-
-			# takes a bit of thought this next bit, draw a rectangle from say x =  2i to 2(i-1) for each plot value
-			# pixels_per_w defines the horizontal scaling factor (2 seems to work)
-			draw.rectangle((pixels_per_w*i,chart_base_loc,((pixels_per_w*i)-pixels_per_w),(chart_base_loc-scaled_price)),ink_color)
+	# the chart is scaled to fit the space below the big price, from just under the text down to the bottom of the screen
+	draw_chart(prices[:number_of_vals_to_display], lowest_price_next_24h, pixels_per_w, price_text_bottom + 3, inky_display.HEIGHT - 1)
 
 	#draw minimum value on chart  <- this doesn't seem to work yet
 	# font = ImageFont.truetype(FredokaOne, 15)
@@ -291,20 +330,15 @@ if (inky_display.WIDTH == 212): #low res display
 
 else: #high res display
 
-	font = ImageFont.truetype(FredokaOne, 72)
 	message = "{0:.1f}".format(current_price) + "p"
-	w, h = font.getsize(message)
-	#x = (inky_display.WIDTH / 2) - (w / 2)
-	#y = (inky_display.HEIGHT / 2) - (h / 2)
-	x = 0
-	y = -10
-
-	if (current_price > 14.8):
-		draw.text((x, y), message, inky_display.RED, font)
-	else:
-		draw.text((x, y), message, inky_display.BLACK, font)
 
 	right_column = 172
+
+	# draw the big current price: moved up to the top edge, and shrunk if it would run into the right hand column
+	if (current_price > 14.8):
+		price_text_bottom = draw_big_price(message, inky_display.RED, 72, right_column - 2)
+	else:
+		price_text_bottom = draw_big_price(message, inky_display.BLACK, 72, right_column - 2)
 
 	# NEXT
 	message = "2:" + "{0:.1f}".format(next_price) + "p"
@@ -341,35 +375,18 @@ else: #high res display
 	else:
 		draw.text((x, y), message, inky_display.BLACK, font)
 
-	pixels_per_h = 2.3  # how many pixels 1p is worth
 	pixels_per_w = 3.5  # how many pixels 1/2 hour is worth
-	chart_base_loc = 121  # location of the bottom of the chart on screen in pixels
-	#chart_base_loc = 85  # location of the bottom of the chart on screen in pixels
 	number_of_vals_to_display = 48 # 36 half hours = 18 hours
 
 	# plot the graph
 	#lowest_price_next_24h = min(i for i in prices if i > 0)
 	lowest_price_next_24h = min(i for i in prices)
-	if (lowest_price_next_24h < 0):
-		chart_base_loc = 104 + lowest_price_next_24h*pixels_per_h - 2 # if we have any negative prices, shift the base of the graph up! 
 
 	print("lowest price Position:", prices.index(lowest_price_next_24h))
 	print("low Value:", lowest_price_next_24h)
 
-	# go through each hour and get the value
-
-	for i in range(0,number_of_vals_to_display):
-		if prices[i] < 999:
-			scaled_price = prices[i] * pixels_per_h # we're scaling it by the value above
-
-			if prices[i] <= (lowest_price_next_24h + 1):   # if within 1p of the lowest price, display in black
-				ink_color = inky_display.BLACK
-			else:
-				ink_color = inky_display.RED
-
-			# takes a bit of thought this next bit, draw a rectangle from say x =  2i to 2(i-1) for each plot value
-			# pixels_per_w defines the horizontal scaling factor (2 seems to work)
-			draw.rectangle((pixels_per_w*i,chart_base_loc,((pixels_per_w*i)-pixels_per_w),(chart_base_loc-scaled_price)),ink_color)
+	# the chart is scaled to fit the space below the big price, from just under the text down to the bottom of the screen
+	draw_chart(prices[:number_of_vals_to_display], lowest_price_next_24h, pixels_per_w, price_text_bottom + 3, inky_display.HEIGHT - 1)
 
 	#draw minimum value on chart  <- this doesn't seem to work yet
 	# font = ImageFont.truetype(FredokaOne, 15)
