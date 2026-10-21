@@ -84,10 +84,12 @@ def get_current_agile_tariff() -> str:
     while products_uri:  # the product list is paged
         products = get_prices_from_api(products_uri)
         for product in products['results']:
-            # we want the domestic import tariff 'AGILE-xx-xx-xx', not the export one (AGILE-OUTGOING-...)
-            # and not any that have been retired (they have an 'available_to' date)
+            # we want the domestic import tariff 'AGILE-xx-xx-xx', not the export one (AGILE-OUTGOING-...),
+            # and only Octopus's own (in 2023 the list also had Bulb's AGILE-FLEX-BB-23-02-08).
+            # No need to check 'available_to': the API only lists products on offer now, and a live product
+            # can already have its end date set, so skipping those could leave us with nothing
             if (product['code'].startswith('AGILE-') and 'OUTGOING' not in product['code']
-                    and product.get('available_to') is None):
+                    and product.get('brand') == 'OCTOPUS_ENERGY'):
                 current.append(product)
         products_uri = products.get('next')
 
