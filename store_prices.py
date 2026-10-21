@@ -18,6 +18,9 @@ import requests
 AGILE_TARIFF_FORMAT = (
   'https://api.octopus.energy/v1/products/AGILE-#date#/electricity-tariffs/E-1R-AGILE-#date#-#region#/standard-unit-rates/')
 
+# lists the current products, so we can find which Agile tariff is live without hardcoding it
+AGILE_PRODUCTS_URI = 'https://api.octopus.energy/v1/products/?is_variable=true&is_business=false'
+
 MAX_RETRIES = 15 # give up once we've tried this many times to get the prices from the API
 
 
@@ -70,6 +73,33 @@ def get_prices_from_api(request_uri: str) -> dict:
         if success:
             print('API request successful, status ' + str(response.status_code) + '.')
             break
+
+
+def get_current_agile_tariff() -> str:
+    """Ask the Octopus API which Agile tariff is currently on offer and return it in the same form as --tariff-type
+    (e.g. '24-10-01' for the product 'AGILE-24-10-01'). Octopus retire old Agile products from time to time, and
+    once they do a hardcoded tariff stops returning any new prices, so we look it up rather than relying on it."""
+    current = []
+    products_uri = AGILE_PRODUCTS_URI
+    while products_uri:  # the product list is paged
+        products = get_prices_from_api(products_uri)
+        for product in products['results']:
+            # we want the domestic import tariff 'AGILE-xx-xx-xx', not the export one (AGILE-OUTGOING-...),
+            # and only Octopus's own (in 2023 the list also had Bulb's AGILE-FLEX-BB-23-02-08).
+            # No need to check 'available_to': the API only lists products on offer now, and a live product
+            # can already have its end date set, so skipping those could leave us with nothing
+            if (product['code'].startswith('AGILE-') and 'OUTGOING' not in product['code']
+                    and product.get('brand') == 'OCTOPUS_ENERGY'):
+                current.append(product)
+        products_uri = products.get('next')
+
+    if not current:
+        raise SystemExit('Could not find a current Agile tariff from the Octopus API, '
+                         'try giving one with --tariff-type instead.')
+
+    # if there is more than one, use the newest
+    newest = max(current, key=lambda product: product['available_from'])
+    return newest['code'][len('AGILE-'):]
 
 
 def insert_data (data: dict):
@@ -188,7 +218,9 @@ K = South Wales
 L = South West England
 M = Yorkshire""",
                     choices = ['A','B','C','D','E','F','G','P','N','J','H','K','L','M'])
-parser.add_argument('--tariff-type', '-t', nargs=1, type=str, dest='tariff', action='store', required=True, help="""
+parser.add_argument('--tariff-type', '-t', nargs=1, type=str, dest='tariff', action='store', required=False, help="""
+Optional - if you leave this out, the current Agile tariff is looked up from the Octopus API for you.
+Only use it to force a particular tariff.
 Find it by logging in at https://octopus.energy/dashboard/new/accounts/personal-details/api-access and scrolling to "Unit rates"
 18-02-21 – The original version capped at 35p per unit
 22-07-22 – The cap rose to 55p
@@ -198,10 +230,14 @@ FLEX-22-11-25 – Cap stays at £1 per unit but new formula only deducts 17.9p f
     """)
 args = parser.parse_args()
 print('Selected region ' + args.region[0])
-print('Selected tariff ' + args.tariff[0])
+if args.tariff:
+    tariff = args.tariff[0]
+else:
+    tariff = get_current_agile_tariff()
+print('Selected tariff ' + tariff)
 
 # Build the API for the request - public API so no authentication required
-AGILE_TARIFF_URI = AGILE_TARIFF_FORMAT.replace("#date#", args.tariff[0]).replace("#region#", args.region[0])
+AGILE_TARIFF_URI = AGILE_TARIFF_FORMAT.replace("#date#", tariff).replace("#region#", args.region[0])
 
 data_rows = get_prices_from_api(AGILE_TARIFF_URI)
 
